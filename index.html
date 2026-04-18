@@ -39,15 +39,16 @@
             const menu = row.c[2]?.v;
             const rating = row.c[3]?.v;
             const review = row.c[4]?.v;
+            const notionUrl = row.c[5]?.v;
             if (name && address) {
-              addMarker(name, address, menu, rating, review);
+              addMarker(name, address, menu, rating, review, notionUrl);
             }
           });
         })
         .catch(err => console.error('시트 데이터 로드 실패:', err));
     }
 
-    function addMarker(name, address, menu, rating, review) {
+    function addMarker(name, address, menu, rating, review, notionUrl) {
       geocoder.geocode({ address: address }, function(results, status) {
         if (status === 'OK') {
           const marker = new google.maps.Marker({
@@ -61,7 +62,8 @@
               <strong style="font-size: 14px;">${name}</strong><br>
               ${menu ? `<span>🍽 ${menu}</span><br>` : ''}
               ${rating ? `<span>⭐ ${rating}점</span><br>` : ''}
-              ${review ? `<span style="color: #555; font-size: 12px;">${review}</span>` : ''}
+              ${review ? `<span style="color: #555; font-size: 12px;">${review}</span><br>` : ''}
+              ${notionUrl ? `<a href="${notionUrl}" target="_blank" style="font-size: 12px;">노션 페이지 보기</a>` : ''}
             </div>
           `;
 
