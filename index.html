@@ -61,7 +61,11 @@
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         zoom: 18,
-        center: { lat: 35.2198432, lng: 126.822408 }
+        center: { lat: 35.2198432, lng: 126.822408 },
+        styles: [
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.business', stylers: [{ visibility: 'off' }] }
+        ]
       });
       geocoder = new google.maps.Geocoder();
       loadAllData();
