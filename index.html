@@ -6,6 +6,47 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     #map { height: 100vh; width: 100%; }
+    .info-window {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-width: 200px;
+      max-width: 280px;
+    }
+    .info-window h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #111;
+    }
+    .info-window .avg-rating {
+      font-size: 13px;
+      color: #f59e0b;
+      margin-bottom: 8px;
+    }
+    .info-window .review-item {
+      border-top: 1px solid #eee;
+      padding: 6px 0;
+      font-size: 12px;
+      color: #444;
+    }
+    .info-window .review-item .menu {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 2px;
+    }
+    .info-window .review-item .review-text {
+      color: #666;
+    }
+    .info-window .notion-link {
+      display: block;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6366f1;
+      text-decoration: none;
+    }
+    /* InfoWindow 상단 여백 제거 */
+    .gm-style-iw-d { overflow: hidden !important; }
+    .gm-style-iw { padding: 12px !important; }
+    .gm-style-iw-c { padding: 0 !important; }
   </style>
 </head>
 <body>
@@ -23,32 +64,50 @@
         center: { lat: 35.2198432, lng: 126.822408 }
       });
       geocoder = new google.maps.Geocoder();
-      loadSheetData();
+      loadAllData();
     }
 
-    function loadSheetData() {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-      fetch(url)
+    function fetchSheet(sheetName) {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+      return fetch(url)
         .then(res => res.text())
         .then(text => {
           const json = JSON.parse(text.substring(47).slice(0, -2));
-          const rows = json.table.rows;
-          rows.forEach(row => {
+          return json.table.rows;
+        });
+    }
+
+    function loadAllData() {
+      Promise.all([fetchSheet('식당'), fetchSheet('리뷰')])
+        .then(([restaurantRows, reviewRows]) => {
+          // 리뷰 데이터를 식당명 기준으로 그룹화
+          const reviewMap = {};
+          reviewRows.forEach(row => {
+            const name = row.c[0]?.v;
+            if (!name) return;
+            if (!reviewMap[name]) reviewMap[name] = [];
+            reviewMap[name].push({
+              menu: row.c[1]?.v,
+              rating: row.c[2]?.v,
+              review: row.c[3]?.v
+            });
+          });
+
+          // 식당마다 마커 추가
+          restaurantRows.forEach(row => {
             const name = row.c[0]?.v;
             const address = row.c[1]?.v;
-            const menu = row.c[2]?.v;
-            const rating = row.c[3]?.v;
-            const review = row.c[4]?.v;
-            const notionUrl = row.c[5]?.v;
+            const notionUrl = row.c[2]?.v;
             if (name && address) {
-              addMarker(name, address, menu, rating, review, notionUrl);
+              const reviews = reviewMap[name] || [];
+              addMarker(name, address, notionUrl, reviews);
             }
           });
         })
-        .catch(err => console.error('시트 데이터 로드 실패:', err));
+        .catch(err => console.error('데이터 로드 실패:', err));
     }
 
-    function addMarker(name, address, menu, rating, review, notionUrl) {
+    function addMarker(name, address, notionUrl, reviews) {
       geocoder.geocode({ address: address }, function(results, status) {
         if (status === 'OK') {
           const marker = new google.maps.Marker({
@@ -63,13 +122,27 @@
             }
           });
 
+          // 평균 별점 계산
+          const ratings = reviews.filter(r => r.rating).map(r => r.rating);
+          const avgRating = ratings.length
+            ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+            : null;
+
+          // 리뷰 목록 HTML
+          const reviewsHtml = reviews.map(r => `
+            <div class="review-item">
+              ${r.menu ? `<div class="menu">🍽 ${r.menu}</div>` : ''}
+              ${r.rating ? `<span>⭐ ${r.rating}점</span> ` : ''}
+              ${r.review ? `<span class="review-text">${r.review}</span>` : ''}
+            </div>
+          `).join('');
+
           const content = `
-            <div style="font-family: sans-serif; min-width: 150px;">
-              <strong style="font-size: 14px;">${name}</strong><br>
-              ${menu ? `<span>🍽 ${menu}</span><br>` : ''}
-              ${rating ? `<span>⭐ ${rating}점</span><br>` : ''}
-              ${review ? `<span style="color: #555; font-size: 12px;">${review}</span><br>` : ''}
-              ${notionUrl ? `<a href="${notionUrl}" target="_blank" style="font-size: 12px;">노션 페이지 보기</a>` : ''}
+            <div class="info-window">
+              <h3>${name}</h3>
+              ${avgRating ? `<div class="avg-rating">⭐ 평균 ${avgRating}점 (${ratings.length}개 리뷰)</div>` : ''}
+              ${reviewsHtml}
+              ${notionUrl ? `<a href="${notionUrl}" target="_blank" class="notion-link">노션 페이지 보기 →</a>` : ''}
             </div>
           `;
 
