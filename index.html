@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>한백인 맛집 지도</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    #map { height: 100vh; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    const SHEET_ID = '1uFWmONrQqv6mVuNWrVV8Les3ynS6aYWVNtDEbxIlHBU';
+    const API_KEY = 'AIzaSyBUTqpAUGU-D7Ns5s5-Srhc3qaaW0vB9zA';
+
+    let map;
+    let geocoder;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 14,
+        center: { lat: 35.1595, lng: 126.8526 }
+      });
+      geocoder = new google.maps.Geocoder();
+      loadSheetData();
+    }
+
+    function loadSheetData() {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+      fetch(url)
+        .then(res => res.text())
+        .then(text => {
+          const json = JSON.parse(text.substring(47).slice(0, -2));
+          const rows = json.table.rows;
+          rows.forEach(row => {
+            const name = row.c[0]?.v;
+            const address = row.c[1]?.v;
+            const notionUrl = row.c[2]?.v;
+            if (name && address) {
+              addMarker(name, address, notionUrl);
+            }
+          });
+        })
+        .catch(err => console.error('시트 데이터 로드 실패:', err));
+    }
+
+    function addMarker(name, address, notionUrl) {
+      geocoder.geocode({ address: address }, function(results, status) {
+        if (status === 'OK') {
+          const marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location,
+            title: name
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: notionUrl
+              ? `<div><strong>${name}</strong><br><a href="${notionUrl}" target="_blank">노션 페이지 보기</a></div>`
+              : `<div><strong>${name}</strong></div>`
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+        }
+      });
+    }
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUTqpAUGU-D7Ns5s5-Srhc3qaaW0vB9zA&callback=initMap" async defer></script>
+</body>
+</html>
