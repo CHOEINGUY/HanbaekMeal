@@ -36,16 +36,18 @@
           rows.forEach(row => {
             const name = row.c[0]?.v;
             const address = row.c[1]?.v;
-            const notionUrl = row.c[2]?.v;
+            const menu = row.c[2]?.v;
+            const rating = row.c[3]?.v;
+            const review = row.c[4]?.v;
             if (name && address) {
-              addMarker(name, address, notionUrl);
+              addMarker(name, address, menu, rating, review);
             }
           });
         })
         .catch(err => console.error('시트 데이터 로드 실패:', err));
     }
 
-    function addMarker(name, address, notionUrl) {
+    function addMarker(name, address, menu, rating, review) {
       geocoder.geocode({ address: address }, function(results, status) {
         if (status === 'OK') {
           const marker = new google.maps.Marker({
@@ -54,11 +56,16 @@
             title: name
           });
 
-          const infoWindow = new google.maps.InfoWindow({
-            content: notionUrl
-              ? `<div><strong>${name}</strong><br><a href="${notionUrl}" target="_blank">노션 페이지 보기</a></div>`
-              : `<div><strong>${name}</strong></div>`
-          });
+          const content = `
+            <div style="font-family: sans-serif; min-width: 150px;">
+              <strong style="font-size: 14px;">${name}</strong><br>
+              ${menu ? `<span>🍽 ${menu}</span><br>` : ''}
+              ${rating ? `<span>⭐ ${rating}점</span><br>` : ''}
+              ${review ? `<span style="color: #555; font-size: 12px;">${review}</span>` : ''}
+            </div>
+          `;
+
+          const infoWindow = new google.maps.InfoWindow({ content });
 
           marker.addListener('click', () => {
             infoWindow.open(map, marker);
