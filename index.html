@@ -131,7 +131,7 @@
           // 리뷰 목록 HTML
           const reviewsHtml = reviews.map(r => `
             <div style="border-top: 1px solid #eee; padding: 6px 0;">
-              ${r.menu ? `<div style="font-weight:600; font-size:12px; color:#333; margin-bottom:2px;">🍽 ${r.menu}</div>` : ''}
+              ${r.menu ? `<div style="font-weight:600; font-size:12px; color:#333; margin-bottom:2px;">${r.menu}</div>` : ''}
               ${r.rating ? `<span style="font-size:12px; color:#f59e0b;">⭐ ${r.rating}점</span> ` : ''}
               ${r.review ? `<span style="font-size:12px; color:#666;">${r.review}</span>` : ''}
             </div>
@@ -152,11 +152,13 @@
             infoWindow.open(map, marker);
             google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
               const iwc = document.querySelector('.gm-style-iw-c');
-              if (iwc) iwc.style.padding = '12px';
+              if (iwc) { iwc.style.padding = '0'; iwc.style.paddingTop = '0'; }
               const iwd = document.querySelector('.gm-style-iw-d');
-              if (iwd) { iwd.style.overflow = 'hidden'; iwd.style.padding = '0'; }
-              const iwt = document.querySelector('.gm-style-iw-t');
-              if (iwt) iwt.style.display = 'none';
+              if (iwd) { iwd.style.overflow = 'hidden'; iwd.style.padding = '0'; iwd.style.marginTop = '0'; }
+              const closeBtn = document.querySelector('.gm-ui-hover-effect');
+              if (closeBtn) { closeBtn.style.top = '2px'; closeBtn.style.right = '2px'; closeBtn.style.width = '24px'; closeBtn.style.height = '24px'; }
+              const iwInner = document.querySelector('.gm-style-iw-tc');
+              if (iwInner) iwInner.style.display = 'none';
             });
           });
         }
