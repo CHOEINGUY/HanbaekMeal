@@ -130,19 +130,19 @@
 
           // 리뷰 목록 HTML
           const reviewsHtml = reviews.map(r => `
-            <div class="review-item">
-              ${r.menu ? `<div class="menu">🍽 ${r.menu}</div>` : ''}
-              ${r.rating ? `<span>⭐ ${r.rating}점</span> ` : ''}
-              ${r.review ? `<span class="review-text">${r.review}</span>` : ''}
+            <div style="border-top: 1px solid #eee; padding: 6px 0;">
+              ${r.menu ? `<div style="font-weight:600; font-size:12px; color:#333; margin-bottom:2px;">🍽 ${r.menu}</div>` : ''}
+              ${r.rating ? `<span style="font-size:12px; color:#f59e0b;">⭐ ${r.rating}점</span> ` : ''}
+              ${r.review ? `<span style="font-size:12px; color:#666;">${r.review}</span>` : ''}
             </div>
           `).join('');
 
           const content = `
-            <div class="info-window">
-              <h3>${name}</h3>
-              ${avgRating ? `<div class="avg-rating">⭐ 평균 ${avgRating}점 (${ratings.length}개 리뷰)</div>` : ''}
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-width:200px; max-width:260px; padding:4px 0;">
+              <div style="font-size:15px; font-weight:700; color:#111; margin-bottom:4px;">${name}</div>
+              ${avgRating ? `<div style="font-size:13px; color:#f59e0b; margin-bottom:6px;">⭐ 평균 ${avgRating}점 · ${ratings.length}개 리뷰</div>` : ''}
               ${reviewsHtml}
-              ${notionUrl ? `<a href="${notionUrl}" target="_blank" class="notion-link">노션 페이지 보기 →</a>` : ''}
+              ${notionUrl ? `<a href="${notionUrl}" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#6366f1; text-decoration:none;">노션 페이지 보기 →</a>` : ''}
             </div>
           `;
 
