@@ -150,6 +150,14 @@
 
           marker.addListener('click', () => {
             infoWindow.open(map, marker);
+            google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+              const iwc = document.querySelector('.gm-style-iw-c');
+              if (iwc) iwc.style.padding = '12px';
+              const iwd = document.querySelector('.gm-style-iw-d');
+              if (iwd) { iwd.style.overflow = 'hidden'; iwd.style.padding = '0'; }
+              const iwt = document.querySelector('.gm-style-iw-t');
+              if (iwt) iwt.style.display = 'none';
+            });
           });
         }
       });
