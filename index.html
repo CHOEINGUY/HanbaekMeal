@@ -57,6 +57,7 @@
 
     let map;
     let geocoder;
+    let currentInfoWindow = null;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
@@ -68,6 +69,9 @@
         ]
       });
       geocoder = new google.maps.Geocoder();
+      map.addListener('click', () => {
+        if (currentInfoWindow) currentInfoWindow.close();
+      });
       loadAllData();
     }
 
@@ -153,6 +157,8 @@
           const infoWindow = new google.maps.InfoWindow({ content });
 
           marker.addListener('click', () => {
+            if (currentInfoWindow) currentInfoWindow.close();
+            currentInfoWindow = infoWindow;
             infoWindow.open(map, marker);
             google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
               const iwc = document.querySelector('.gm-style-iw-c');
@@ -160,7 +166,7 @@
               const iwd = document.querySelector('.gm-style-iw-d');
               if (iwd) { iwd.style.overflow = 'hidden'; iwd.style.padding = '0'; iwd.style.marginTop = '0'; }
               const closeBtn = document.querySelector('.gm-ui-hover-effect');
-              if (closeBtn) { closeBtn.style.top = '2px'; closeBtn.style.right = '2px'; closeBtn.style.width = '24px'; closeBtn.style.height = '24px'; }
+              if (closeBtn) closeBtn.style.display = 'none';
               const iwInner = document.querySelector('.gm-style-iw-tc');
               if (iwInner) iwInner.style.display = 'none';
             });
