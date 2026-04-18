@@ -54,7 +54,13 @@
           const marker = new google.maps.Marker({
             map: map,
             position: results[0].geometry.location,
-            title: name
+            title: name,
+            label: {
+              text: name,
+              color: '#333',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }
           });
 
           const content = `
